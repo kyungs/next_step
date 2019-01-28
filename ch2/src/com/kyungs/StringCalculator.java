@@ -6,40 +6,53 @@ import java.util.regex.Pattern;
 public class StringCalculator {
 	
 	// 구분자로 분리 후 각 숫자의 합을 구한다. 
-    // + 입력값이 없는 경우 : " ", null
     // + 구분자가 없는 경우 : "1", "123"
+	// + 잘못된 입력 에러 처리
     public int add(String text) {
-        int sum = 0;
-        if(text == null || text == " ") return sum;
-        
-        
-        // 커스텀 구분자가 있으면, 
-        String[] tokens = customDelimeter(text);
-        // 없으면 기본 구분자(, & :)
-        if(tokens == null) tokens = text.split(",|:");
-        
-        System.out.printf("tokens length : %s\n", tokens.length);
+        if(isBlank(text)) return 0; 
         
         // 더하기 연산 
-        for(String s : tokens){
-//            sum += Integer.parseInt(s);
-        	int value = Integer.parseInt(s);
-            // 음수 에러 처리 
-        	if(value < 0) throw new InvalidValueException("음수는 입력할 수 없습니다.");
-        	sum += value;
-        }
-        return sum;
+        return sum(toInts(split(text)));
     }  
     
-    private String[] customDelimeter(String text){
+    private boolean isBlank(String text) {
+    	// 입력값이 없는 경우 : "", null
+    	if(text == null || text.isEmpty() || text == " ") return true;
+    	return false;
+    }
+    
+    private String[] split(String text){
     	Matcher m = Pattern.compile("//(.)\n(.*)").matcher(text);
+    	// 커스텀 구분자가 있으면, 
     	if(m.find()) {
         	String customDelimeter = m.group(1);
         	String[] tokens = m.group(2).split(customDelimeter);
         	return tokens;
         }
-    	return null;
+        // 없으면 기본 구분자(, & :)
+    	return text.split(",|:");
+    }
+
+    private int sum(int[] tokens){
+    	int sum = 0;
+    	for(int i : tokens) {
+        	sum += i;
+    	}
+    	return sum;
     }
     
-    // 잘못된 입력 에러 처리 
+    private int[] toInts(String[] tokens){
+    	int[] numbers = new int[tokens.length];
+    	for(int i=0; i < tokens.length; i++){
+    		numbers[i] = isPositive(tokens[i]);
+    	}
+    	return numbers;
+    }
+    
+    private int isPositive(String text){
+    	int value = Integer.parseInt(text);
+    	if (value < 0) throw new InvalidValueException("음수는 입력할 수 없습니다.");
+    	return value;
+    }
 }
+
